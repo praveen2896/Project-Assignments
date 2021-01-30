@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.pockemon.game.utility.ResstUtility;
 
@@ -25,7 +24,7 @@ public class GameController {
 	@Autowired
 	private ResstUtility resstUtility;
 	
-	@GetMapping("/getMoves/{name}")
+	@GetMapping(value="/getMoves/{name}")
 	public String getPowerfulMoves(@PathVariable String name){
 		String response=getApi(name);
 		return response;		
@@ -46,7 +45,7 @@ public class GameController {
 			System.out.println("number of moves : "+jsArr.size());
 			finalMap=getMoves(jsArr);
 			if(finalMap.size()==0)
-				return "no moves for the pokemon "+name;
+				return "no moves for the pokemon "+name;			
 			list = new ArrayList<Integer>(finalMap.values());
 			//System.out.println("list-->"+list);
 			//To remove null values from the List
@@ -65,8 +64,8 @@ public class GameController {
 
 	private String getPowerMove(List<Integer> list, Map<String, Integer> finalMap) {
 		if(list.size()==0)
-		{
-			return new ArrayList<>(finalMap.keySet()).get(0).toString();
+		{			
+			return finalMap.keySet().toArray()[0].toString();
 		}
 		else if(list.size()>=1)
 		{
@@ -84,9 +83,8 @@ public class GameController {
 	private Map<String, Integer> getMoves(JsonArray jsArr) {
 		Map<String,Integer> finalMap=new HashMap<>();
 		for(int i = 0; i < jsArr.size(); i++)
-		{
-			JsonElement objects = jsArr.get(i);
-			JsonObject jobj1 = new Gson().fromJson(objects, JsonObject.class);
+		{			
+			JsonObject jobj1 = new Gson().fromJson(jsArr.get(i), JsonObject.class);
 			ResponseEntity<String> res1=resstUtility.getResponseApi(jobj1.getAsJsonObject("move").get("url").getAsString());
 			JsonObject jobj2 = new Gson().fromJson(res1.getBody(), JsonObject.class);				
 			finalMap.put(jobj1.getAsJsonObject("move").get("name").getAsString(),jobj2.get("power").isJsonNull()?null:jobj2.get("power").getAsInt());			
