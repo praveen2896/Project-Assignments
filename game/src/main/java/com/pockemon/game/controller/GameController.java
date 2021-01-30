@@ -1,11 +1,10 @@
 package com.pockemon.game.controller;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,36 +30,30 @@ public class GameController {
 	}
 
 	private String getApi(String name) {
-		String url="http://pokeapi.co/api/v2/pokemon/"+name;		
+		String url = "http://pokeapi.co/api/v2/pokemon/" + name;
 		try {
 			ResponseEntity<String> finalResponse = null;
-			Map<String,Integer> finalMap=new HashMap<>();
-			List<Integer> list=new ArrayList<>();
+			Map<String, Integer> finalMap = new HashMap<>();			
 			finalResponse = resstUtility.getResponseApi(url);
-			if(finalResponse==null)
+			if (finalResponse == null)
 				return "Invalid Pokemon Character";
 			JsonObject jobj = new Gson().fromJson(finalResponse.getBody(), JsonObject.class);
-			//System.out.println(jobj.getAsJsonArray("moves"));
-			JsonArray jsArr=jobj.getAsJsonArray("moves");
-			System.out.println("number of moves : "+jsArr.size());
-			finalMap=getMoves(jsArr);
-			if(finalMap.size()==0)
-				return "no moves for the pokemon "+name;			
-			list = new ArrayList<Integer>(finalMap.values());
-			//System.out.println("list-->"+list);
-			//To remove null values from the List
-			list.removeAll(Collections.singleton(null));
-			Collections.sort(list);	
-			//System.out.println("list-->"+list);	
-			String powerMove=getPowerMove(list,finalMap);			
+			// System.out.println(jobj.getAsJsonArray("moves"));
+			JsonArray jsArr = jobj.getAsJsonArray("moves");
+			System.out.println("number of moves : " + jsArr.size());
+			finalMap = getMoves(jsArr);
+			if (finalMap.size() == 0)
+				return "no moves for the pokemon " + name;
+			List <Integer> list=finalMap.values().stream().filter(e->e!=null).sorted().collect(Collectors.toList());
+			String powerMove = getPowerMove(list, finalMap);
 			System.out.println("final Response-->" + powerMove);
 			return powerMove;
-			
-		} catch (Exception ex) {           
-           System.out.println(ex.getStackTrace()[0].getLineNumber());
-           return "Exception occurs";
-        }
+		} catch (Exception ex) {
+			System.out.println(ex.getStackTrace()[0].getLineNumber());
+			return "Exception occurs";
+		}
 	}
+
 
 	private String getPowerMove(List<Integer> list, Map<String, Integer> finalMap) {
 		if(list.size()==0)
@@ -75,7 +68,8 @@ public class GameController {
 					  System.out.println("power "+list.get(list.size()-1));
 					  return k.toString();
 			    }
-			}
+			}			
+			
 		}
 		return null;
 	}
